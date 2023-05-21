@@ -39,6 +39,7 @@ uploaded_file = st.sidebar.file_uploader(
     on_change=clear_submit,
 )
 
+index = None
 if uploaded_file is not None:
     if uploaded_file.name.endswith(".pdf"):
         doc = parse_pdf(uploaded_file)
@@ -69,17 +70,16 @@ if 'past' not in st.session_state:
 def get_text():
     if user_secret:
         st.header("Ask me something about the document:")
-        input_text = st.text_area("You:", on_change=clear_submit)
+        input_text = st.text_input("You:", on_change=clear_submit, key="input_text", value="", help="Press Enter to submit")
         return input_text
 
 user_input = get_text()
 
-button = st.button("Submit")
-if button or st.session_state.get("submit"):
-    if not user_input:
-        st.error("Please enter a question!")
-    else:
-        st.session_state["submit"] = True
+if user_input and (st.session_state.get("submit") or st.session_state["input_text"] != user_input):
+    st.session_state["submit"] = True
+    st.session_state["input_text"] = user_input
+
+    if index is not None:
         sources = search_docs(index, user_input)
         try:
             answer = get_answer(sources, user_input)
@@ -87,7 +87,8 @@ if button or st.session_state.get("submit"):
             st.session_state.generated.append(answer["output_text"].split("SOURCES: ")[0])
         except OpenAIError as e:
             st.error(e._message)
-        if st.session_state['generated']:
-            for i in range(len(st.session_state['generated'])-1, -1, -1):
-                st.write(st.session_state["generated"][i])
-                st.write(st.session_state['past'][i])
+
+if st.session_state['generated']:
+    for i in range(len(st.session_state['generated'])-1, -1, -1):
+        st.write(st.session_state["generated"][i])
+        st.write(st.session_state['past'][i])

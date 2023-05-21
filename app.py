@@ -1,5 +1,5 @@
 import streamlit as st
-from streamlit import components
+from streamlit import components 
 from utils import (
     parse_docx,
     parse_pdf,

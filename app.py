@@ -1,4 +1,5 @@
 import streamlit as st
+import streamlit.components.v1 as components
 from utils import (
     parse_docx,
     parse_pdf,
@@ -70,7 +71,7 @@ if 'past' not in st.session_state:
 def get_text():
     if user_secret:
         st.header("Ask me something about the document:")
-        input_text = st.text_area("You:", on_change=clear_submit, key="input_text", value="", help="Press Enter to submit")
+        input_text = st.text_area("You:", key="input_text", value="", help="Press Enter to submit", height=100)
         return input_text
 
 user_input = get_text()
@@ -92,3 +93,19 @@ if st.session_state['generated']:
     for i in range(len(st.session_state['generated'])-1, -1, -1):
         st.write(st.session_state["generated"][i])
         st.write(st.session_state['past'][i])
+
+# Add JavaScript code to handle Enter key press event
+javascript = """
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const input = document.querySelector('textarea');
+    input.addEventListener('keydown', function(event) {
+        if (event.keyCode === 13 && !event.shiftKey) {
+            event.preventDefault();
+            input.blur();
+        }
+    });
+});
+</script>
+"""
+components.html(javascript, height=0)

@@ -1,5 +1,5 @@
 import streamlit as st
-import streamlit.components.v1 as components
+from streamlit import components
 from utils import (
     parse_docx,
     parse_pdf,
@@ -93,19 +93,3 @@ if st.session_state['generated']:
     for i in range(len(st.session_state['generated'])-1, -1, -1):
         st.write(st.session_state["generated"][i])
         st.write(st.session_state['past'][i])
-
-# Add JavaScript code to handle Enter key press event
-javascript = """
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const input = document.querySelector('textarea');
-    input.addEventListener('keydown', function(event) {
-        if (event.keyCode === 13 && !event.shiftKey) {
-            event.preventDefault();
-            input.blur();
-        }
-    });
-});
-</script>
-"""
-components.html(javascript, height=0)

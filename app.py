@@ -21,7 +21,7 @@ def clear_submit():
 def set_openai_api_key(api_key: str):
     st.session_state["OPENAI_API_KEY"] = api_key
 
-st.sidebar.title("File GPT 🤖")
+st.sidebar.title("File GPT")
 user_secret = st.sidebar.text_input(
     "OpenAI API Key",
     type="password",
@@ -73,14 +73,14 @@ if 'past' not in st.session_state:
 def get_text():
     if user_secret:
         st.header("Ask me something about the document:")
-        input_text = st.text_area("You:", on_change=clear_submit, key='input_text')
+        input_text = st.text_area("Usted:", on_change=clear_submit, key='input_text')
         return input_text
 user_input = get_text()
 
-button = st.button("Submit")
+button = st.button("Enviar")
 if button or st.session_state.get("submit"):
     if not user_input:
-        st.error("Please enter a question!")
+        st.error("¡Por favor, ingrese una pregunta!")
     else:
         st.session_state["submit"] = True
         sources = search_docs(index, user_input)
@@ -92,5 +92,5 @@ if button or st.session_state.get("submit"):
             st.error(e._message)
         if st.session_state['generated']:
             for i in range(len(st.session_state['generated'])-1, -1, -1):
-                message(st.session_state["generated"][i], key=str(i))
-                message(st.session_state['past'][i], is_user=True, key=str(i) + '_user')
+                message(st.session_state["generated"][i], key=str(i), name="AI")
+                message(st.session_state['past'][i], is_user=True, key=str(i) + '_user', name="Usted")

@@ -72,7 +72,7 @@ if 'past' not in st.session_state:
 
 def get_text():
     if user_secret:
-        st.header("Ask me something about the document:")
+        st.header("Pregunte algo sobre el documento:")
         input_text = st.text_area("You:", on_change=clear_submit, key='input_text')
         return input_text
 user_input = get_text()

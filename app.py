@@ -1,5 +1,5 @@
 import streamlit as st
-from streamlit import components 
+from streamlit_chat import message
 from utils import (
     parse_docx,
     parse_pdf,
@@ -21,8 +21,10 @@ def clear_submit():
 def set_openai_api_key(api_key: str):
     st.session_state["OPENAI_API_KEY"] = api_key
 
-# Set OpenAI API Key
-user_secret = st.sidebar.text_input(
+# Sidebar
+index = None
+doc = None
+user_secret = st.text_input(
     "OpenAI API Key",
     type="password",
     placeholder="Paste your OpenAI API key here (sk-...)",
@@ -32,15 +34,13 @@ user_secret = st.sidebar.text_input(
 if user_secret:
     set_openai_api_key(user_secret)
 
-# File Upload
-uploaded_file = st.sidebar.file_uploader(
+uploaded_file = st.file_uploader(
     "Upload a pdf, docx, or txt file",
     type=["pdf", "docx", "txt", "csv", "js", "py", "json", "html", "css", "md"],
     help="Scanned documents are not supported yet!",
     on_change=clear_submit,
 )
 
-index = None
 if uploaded_file is not None:
     if uploaded_file.name.endswith(".pdf"):
         doc = parse_pdf(uploaded_file)
@@ -52,8 +52,6 @@ if uploaded_file is not None:
         doc = parse_txt(uploaded_file)
     else:
         doc = parse_any(uploaded_file)
-        #st.error("File type not supported")
-        #doc = None
     text = text_to_docs(doc)
     try:
         with st.spinner("Indexing document... This may take a while⏳"):
@@ -62,6 +60,7 @@ if uploaded_file is not None:
     except OpenAIError as e:
         st.error(e._message)
 
+st.write('To obtain an API Key you must create an OpenAI account at the following link: https://openai.com/api/')
 if 'generated' not in st.session_state:
     st.session_state['generated'] = []
 
@@ -71,16 +70,16 @@ if 'past' not in st.session_state:
 def get_text():
     if user_secret:
         st.header("Ask me something about the document:")
-        input_text = st.text_area("You:", key="input_text", value="", help="Press Enter to submit", height=100)
+        input_text = st.text_area("You:", on_change=clear_submit, key='input_text')
         return input_text
-
 user_input = get_text()
 
-if user_input and (st.session_state.get("submit") or st.session_state["input_text"] != user_input):
-    st.session_state["submit"] = True
-    st.session_state["input_text"] = user_input
-
-    if index is not None:
+button = st.button("Submit")
+if button or st.session_state.get("submit"):
+    if not user_input:
+        st.error("Please enter a question!")
+    else:
+        st.session_state["submit"] = True
         sources = search_docs(index, user_input)
         try:
             answer = get_answer(sources, user_input)
@@ -88,8 +87,7 @@ if user_input and (st.session_state.get("submit") or st.session_state["input_tex
             st.session_state.generated.append(answer["output_text"].split("SOURCES: ")[0])
         except OpenAIError as e:
             st.error(e._message)
-
-if st.session_state['generated']:
-    for i in range(len(st.session_state['generated'])-1, -1, -1):
-        st.write(st.session_state["generated"][i])
-        st.write(st.session_state['past'][i])
+        if st.session_state['generated']:
+            for i in range(len(st.session_state['generated'])-1, -1, -1):
+                message(st.session_state["generated"][i], key=str(i))
+                message(st.session_state['past'][i], is_user=True, key=str(i) + '_user')

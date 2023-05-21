@@ -21,10 +21,8 @@ def clear_submit():
 def set_openai_api_key(api_key: str):
     st.session_state["OPENAI_API_KEY"] = api_key
 
-# Sidebar
-index = None
-doc = None
-user_secret = st.text_input(
+st.sidebar.title("File GPT 🤖")
+user_secret = st.sidebar.text_input(
     "OpenAI API Key",
     type="password",
     placeholder="Paste your OpenAI API key here (sk-...)",
@@ -34,12 +32,18 @@ user_secret = st.text_input(
 if user_secret:
     set_openai_api_key(user_secret)
 
-uploaded_file = st.file_uploader(
+st.sidebar.markdown("---")
+
+st.sidebar.subheader("Upload a Document")
+uploaded_file = st.sidebar.file_uploader(
     "Upload a pdf, docx, or txt file",
     type=["pdf", "docx", "txt", "csv", "js", "py", "json", "html", "css", "md"],
     help="Scanned documents are not supported yet!",
     on_change=clear_submit,
 )
+
+index = None
+doc = None
 
 if uploaded_file is not None:
     if uploaded_file.name.endswith(".pdf"):
@@ -60,7 +64,6 @@ if uploaded_file is not None:
     except OpenAIError as e:
         st.error(e._message)
 
-st.write('To obtain an API Key you must create an OpenAI account at the following link: https://openai.com/api/')
 if 'generated' not in st.session_state:
     st.session_state['generated'] = []
 

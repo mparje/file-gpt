@@ -21,7 +21,7 @@ def clear_submit():
 def set_openai_api_key(api_key: str):
     st.session_state["OPENAI_API_KEY"] = api_key
 
-st.sidebar.title("File GPT")
+st.sidebar.title("File GPT 🤖")
 user_secret = st.sidebar.text_input(
     "OpenAI API Key",
     type="password",
